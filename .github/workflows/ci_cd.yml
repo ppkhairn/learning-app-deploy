@@ -58,7 +58,7 @@ jobs:
 
     - name: Run pytest
       run: |
-        pytest --maxfail=1 --disable-warnings -q  # You can adjust pytest options here
+        pytest tests/ --maxfail=1 --disable-warnings -q  # You can adjust pytest options here
 
     - name: Extract version from pyproject.toml
       id: extract-version
