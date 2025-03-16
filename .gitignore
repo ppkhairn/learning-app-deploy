@@ -1,0 +1,46 @@
+# Ignore everything inside temp_files
+temp_files/*
+
+# But keep the temp_files folder itself
+!temp_files/.gitkeep
+
+*.log
+
+# Ignore IDE/editor configuration files
+*.vscode/
+*.idea/
+*.swp
+
+# Ignore environment variable file
+# .env
+
+# Ignore Python bytecode files
+*.pyc
+_pycache_/
+__pycache__/
+*.pyo
+*.pyd
+
+
+# Ignore temporary files
+*.tmp
+*.swp
+
+# Ignore virtual environment directories
+venv/
+
+# Coverage reports
+.coverage
+*.cover
+
+# Local configuration files
+*.local
+*.sublime-workspace
+*.pyarmor_config
+
+passphrase.txt
+build/
+dist/
+
+*build.zip
+*dist.zip
