@@ -56,6 +56,10 @@ jobs:
         curl -sSL https://install.python-poetry.org | python3 -
         poetry install --no-root
 
+    - name: Set PYTHONPATH
+      run: |
+        export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+
     - name: Run pytest
       run: |
         poetry run pytest tests/ --maxfail=1 --disable-warnings -q  # You can adjust pytest options here
