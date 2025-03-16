@@ -67,6 +67,13 @@ jobs:
     - name: Set PYTHONPATH
       run: |
         export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+    
+    - name: Check PYTHONPATH
+      run: |
+        echo "PYTHONPATH is set to: $PYTHONPATH"
+        echo "Contents of $(pwd)/src:"
+        ls -R $(pwd)/src
+
 
     - name: Run pytest
       run: |
