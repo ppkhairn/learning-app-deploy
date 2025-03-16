@@ -78,7 +78,7 @@ jobs:
     - name: Run pytest
       run: |
         echo "PWD = $(pwd)"
-        PYTHONPATH=$(pwd)/src poetry run pytest tests/ --maxfail=1 --disable-warnings -q  # You can adjust pytest options here
+        poetry run PYTHONPATH=$(pwd)/src pytest tests/ --maxfail=1 --disable-warnings -q  # You can adjust pytest options here
 
     - name: Extract version from pyproject.toml
       id: extract-version
