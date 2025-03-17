@@ -47,39 +47,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # - name: Set up Python
-    #   uses: actions/setup-python@v2
-    #   with:
-    #     python-version: '3.9'  # Choose the Python version
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Choose the Python version
 
-    # - name: Install dependencies with Poetry
-    #   run: |
-    #     curl -sSL https://install.python-poetry.org | python3 -
-    #     poetry install --no-root
+    - name: Install dependencies with Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        poetry install --no-root
     
-    # - name: Verify Poetry installation
-    #   run: |
-    #     poetry --version
+    - name: Verify Poetry installation
+      run: |
+        poetry --version
 
-    # - name: Check directory structure
-    #   run: |
-    #     ls -R
+    - name: Check directory structure
+      run: |
+        ls -R
 
-    # - name: Set PYTHONPATH
-    #   run: |
-    #     export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+    - name: Set PYTHONPATH
+      run: |
+        export PYTHONPATH=$(pwd)/src:$PYTHONPATH
     
-    # - name: Check PYTHONPATH
-    #   run: |
-    #     echo "PYTHONPATH is set to: $PYTHONPATH"
-    #     echo "Contents of $(pwd)/src:"
-    #     ls -R $(pwd)/src
+    - name: Check PYTHONPATH
+      run: |
+        echo "PYTHONPATH is set to: $PYTHONPATH"
+        echo "Contents of $(pwd)/src:"
+        ls -R $(pwd)/src
 
-    # - name: Run pytest
-    #   run: |
-    #     echo "PWD = $(pwd)"
-    #     export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-    #     poetry run pytest tests/ --maxfail=1 --disable-warnings -q # You can adjust pytest options here
+    - name: Run pytest
+      run: |
+        echo "PWD = $(pwd)"
+        export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+        poetry run pytest tests/ --maxfail=1 --disable-warnings -q # You can adjust pytest options here
 
     - name: Extract version from pyproject.toml
       id: extract-version
