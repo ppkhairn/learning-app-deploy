@@ -151,6 +151,7 @@ def test_upload_to_s3(aws_mock, aws_2_csv) -> None:
     file_path = file_folder / filename
     # s3_client = aws_mock
     # with mock_aws():
+    s3_client = aws_mock
     aws_2_csv.upload_to_s3(filename)
 
     # Check if the file was uploaded to the S3 bucket
