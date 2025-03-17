@@ -11,6 +11,7 @@ import boto3
 import os
 import logging
 from decimal import Decimal
+from unittest.mock import patch
 logging.basicConfig(level=logging.INFO)
 
 @pytest.fixture
@@ -152,7 +153,8 @@ def test_upload_to_s3(aws_mock, aws_2_csv) -> None:
     # s3_client = aws_mock
     # with mock_aws():
     s3_client = aws_mock
-    aws_2_csv.upload_to_s3(filename)
+    with patch.object(s3_client, 'list_buckets', return_value={"Buckets": []}):
+        aws_2_csv.upload_to_s3(filename)
 
     # Check if the file was uploaded to the S3 bucket
     s3_client = aws_mock
