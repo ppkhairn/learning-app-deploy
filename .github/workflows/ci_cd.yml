@@ -34,7 +34,8 @@ on:
 env:
   # AWS_REGION: us-east-1                      # Set this to your AWS region
   # ECR_REPOSITORY: my-ecr-repository          # Set this to your ECR repository name
-  STACK_NAME: my-ecs-stack                   # Set this to your CloudFormation stack name
+  STACK_NAME: my-ecs-stack  
+  MIN_IMGS_KEEP: 2                 # Set this to your CloudFormation stack name
   # CLOUDFORMATION_TEMPLATE: cloudformation/ecs-cloudformation-template.yaml  # Path to your CloudFormation template
 
 jobs:
@@ -131,21 +132,43 @@ jobs:
           exit 1
         fi
 
-    # - name: Build, tag, and push Docker image to ECR
-    #   id: build-image
-    #   env:
-    #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}   # Registry URL from login
-    #     ECR_REPOSITORY: ${{ secrets.AWS_ECR }} 
-    #     IMAGE_TAG: ${{ env.VERSION }}
-    #   run: |
-    #     # Build and push Docker image to ECR
-    #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-    #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-    #     echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        - name: Cleanup Old Images in ECR (Keep Latest 10)
+      env:
+        ECR_REPOSITORY: ${{ secrets.AWS_ECR }}
+      run: |
+        # Fetch image details sorted by pushed time (descending)
+        IMAGE_DETAILS=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query 'imageDetails | sort_by(@, &imagePushedAt) | reverse(@)' --output json)
+        
+        # Extract image digests, keeping only the latest 10
+        IMAGE_DIGESTS=$(echo $IMAGE_DETAILS | jq -r '.[${{ env.MIN_IMGS_KEEP }}:] | .[].imageDigest')
 
-    # # - name: Deploy CloudFormation stack for ECS update
-    # #   uses: aws-actions/aws-cloudformation-create-stack@v1
-    # #   with:
-    # #     stack-name: ${{ env.STACK_NAME }}
-    # #     template-body: file://${{ env.CLOUDFORMATION_TEMPLATE }}
-    # #     capabilities: CAPABILITY_NAMED_IAM
+        if [[ -z "$IMAGE_DIGESTS" ]]; then
+          echo "No old images to delete. Exiting."
+          exit 0
+        fi
+
+        echo "Deleting old images from ECR..."
+        for DIGEST in $IMAGE_DIGESTS; do
+          echo "Deleting image with digest: $DIGEST"
+          aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageDigest=$DIGEST
+        done
+        echo "Cleanup complete!"
+
+    - name: Build, tag, and push Docker image to ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}   # Registry URL from login
+        ECR_REPOSITORY: ${{ secrets.AWS_ECR }} 
+        IMAGE_TAG: ${{ env.VERSION }}
+      run: |
+        # Build and push Docker image to ECR
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    # - name: Deploy CloudFormation stack for ECS update
+    #   uses: aws-actions/aws-cloudformation-create-stack@v1
+    #   with:
+    #     stack-name: ${{ env.STACK_NAME }}
+    #     template-body: file://${{ env.CLOUDFORMATION_TEMPLATE }}
+    #     capabilities: CAPABILITY_NAMED_IAM
