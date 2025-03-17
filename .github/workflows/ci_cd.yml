@@ -121,7 +121,7 @@ jobs:
         LATEST_TAG: ${{ env.latest_tag }}
       run: |
         # Compare versions using Python
-        compare_result=$(python3 -c "from packaging import version; print(version.parse('$NEW_TAG') > version.parse('$LATEST_TAG'))")
+        compare_result=$(poetry run python -c "from packaging import version; print(version.parse('$NEW_TAG') > version.parse('$LATEST_TAG'))")
 
         if [[ "$compare_result" == "True" ]]; then
           echo "New tag ($NEW_TAG) is greater than the latest tag ($LATEST_TAG). Proceeding."
