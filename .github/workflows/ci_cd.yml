@@ -132,7 +132,7 @@ jobs:
           exit 1
         fi
 
-        - name: Cleanup Old Images in ECR (Keep Latest 10)
+    - name: Cleanup Old Images in ECR (Keep Latest 10)
       env:
         ECR_REPOSITORY: ${{ secrets.AWS_ECR }}
       run: |
