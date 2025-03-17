@@ -46,40 +46,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'  # Choose the Python version
+    # - name: Set up Python
+    #   uses: actions/setup-python@v2
+    #   with:
+    #     python-version: '3.9'  # Choose the Python version
 
-    - name: Install dependencies with Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        poetry install --no-root
+    # - name: Install dependencies with Poetry
+    #   run: |
+    #     curl -sSL https://install.python-poetry.org | python3 -
+    #     poetry install --no-root
     
-    - name: Verify Poetry installation
-      run: |
-        poetry --version
+    # - name: Verify Poetry installation
+    #   run: |
+    #     poetry --version
 
-    - name: Check directory structure
-      run: |
-        ls -R
+    # - name: Check directory structure
+    #   run: |
+    #     ls -R
 
-    - name: Set PYTHONPATH
-      run: |
-        export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+    # - name: Set PYTHONPATH
+    #   run: |
+    #     export PYTHONPATH=$(pwd)/src:$PYTHONPATH
     
-    - name: Check PYTHONPATH
-      run: |
-        echo "PYTHONPATH is set to: $PYTHONPATH"
-        echo "Contents of $(pwd)/src:"
-        ls -R $(pwd)/src
+    # - name: Check PYTHONPATH
+    #   run: |
+    #     echo "PYTHONPATH is set to: $PYTHONPATH"
+    #     echo "Contents of $(pwd)/src:"
+    #     ls -R $(pwd)/src
 
-
-    - name: Run pytest
-      run: |
-        echo "PWD = $(pwd)"
-        export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-        poetry run pytest tests/ --maxfail=1 --disable-warnings -q # You can adjust pytest options here
+    # - name: Run pytest
+    #   run: |
+    #     echo "PWD = $(pwd)"
+    #     export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+    #     poetry run pytest tests/ --maxfail=1 --disable-warnings -q # You can adjust pytest options here
 
     - name: Extract version from pyproject.toml
       id: extract-version
@@ -98,21 +97,55 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push Docker image to ECR
-      id: build-image
+    - name: Get the latest tag from ECR
+      id: get-latest-tag
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}   # Registry URL from login
-        ECR_REPOSITORY: ${{ secrets.AWS_ECR }} 
-        IMAGE_TAG: ${{ env.VERSION }}
+        ECR_REPOSITORY: ${{ secrets.AWS_ECR }}
       run: |
-        # Build and push Docker image to ECR
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        # Fetch all image tags from ECR
+        EXISTING_TAGS=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query 'imageDetails[*].imageTags' --output json | jq -r '.[] | select(.!=null) | .[]' | sort -V | tail -n1)
 
-    # - name: Deploy CloudFormation stack for ECS update
-    #   uses: aws-actions/aws-cloudformation-create-stack@v1
-    #   with:
-    #     stack-name: ${{ env.STACK_NAME }}
-    #     template-body: file://${{ env.CLOUDFORMATION_TEMPLATE }}
-    #     capabilities: CAPABILITY_NAMED_IAM
+        if [[ -z "$EXISTING_TAGS" ]]; then
+          echo "No existing images found. Proceeding with the first tag."
+          echo "latest_tag=0.0.0" >> $GITHUB_ENV
+        else
+          echo "Latest tag found: $EXISTING_TAGS"
+          echo "latest_tag=$EXISTING_TAGS" >> $GITHUB_ENV
+        fi
+
+    - name: Compare new tag with the latest tag in ECR
+      id: compare-tags
+      env:
+        NEW_TAG: ${{ env.VERSION }}  # Extracted from pyproject.toml
+        LATEST_TAG: ${{ env.latest_tag }}
+      run: |
+        # Compare versions using Python
+        compare_result=$(python3 -c "from packaging import version; print(version.parse('$NEW_TAG') > version.parse('$LATEST_TAG'))")
+
+        if [[ "$compare_result" == "True" ]]; then
+          echo "New tag ($NEW_TAG) is greater than the latest tag ($LATEST_TAG). Proceeding."
+          echo "new_tag_valid=true" >> $GITHUB_ENV
+        else
+          echo "New tag ($NEW_TAG) is NOT greater than the latest tag ($LATEST_TAG). Exiting."
+          echo "new_tag_valid=false" >> $GITHUB_ENV
+          exit 1
+        fi
+
+    # - name: Build, tag, and push Docker image to ECR
+    #   id: build-image
+    #   env:
+    #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}   # Registry URL from login
+    #     ECR_REPOSITORY: ${{ secrets.AWS_ECR }} 
+    #     IMAGE_TAG: ${{ env.VERSION }}
+    #   run: |
+    #     # Build and push Docker image to ECR
+    #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+    #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    #     echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    # # - name: Deploy CloudFormation stack for ECS update
+    # #   uses: aws-actions/aws-cloudformation-create-stack@v1
+    # #   with:
+    # #     stack-name: ${{ env.STACK_NAME }}
+    # #     template-body: file://${{ env.CLOUDFORMATION_TEMPLATE }}
+    # #     capabilities: CAPABILITY_NAMED_IAM
