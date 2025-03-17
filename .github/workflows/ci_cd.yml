@@ -154,10 +154,10 @@ jobs:
                                 ECSServiceName=my-ecs-service \
                                 TaskDefinitionFamily=my-task-definition-family \
                                 ALBName=my-alb \
-                                VPCId=vpc-d41ae2a9 \   # Reference the VPCId parameter from secrets
-                                Subnet1=subnet-9b047bd6 \ # Reference Subnet1 from secrets
-                                Subnet2=subnet-af2c80c9 \   # Reference Subnet2 from secrets
-                                SecurityGroupId=sg-1723ce28  # Correct SecurityGroupId reference
+                                VPCId=vpc-d41ae2a9 \
+                                Subnet1=subnet-9b047bd6 \
+                                Subnet2=subnet-af2c80c9 \
+                                SecurityGroupId=sg-1723ce28
 
 # VPCId=${{ secrets.VPC_ID }} \  # Reference the VPCId parameter from secrets
 # Subnet1=${{ secrets.SUBNET1_ID }} \  # Reference Subnet1 from secrets
