@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "Image Upload To Cloud"
-version = "0.1.0"
+name = "Learning app deployment"
+version = "0.1.1"
 description = "poetry for python packages for image upload code"
 authors = ["Pushkar Khairnar <ppkhairn@mtu.edu>"]
 readme = "README.md"
