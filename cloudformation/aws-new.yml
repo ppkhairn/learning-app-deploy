@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECS with Fargate, ECR, and ALB using an existing VPC'
+
+Parameters:
+  ECRRepositoryName:
+    Type: String
+    Default: my-ecr-repo
+    Description: The name of the ECR repository to store Docker images.
+
+  ECSClusterName:
+    Type: String
+    Default: my-ecs-cluster
+    Description: The name of the ECS cluster.
+
+  ECSServiceName:
+    Type: String
+    Default: my-ecs-service
+    Description: The name of the ECS service.
+
+  TaskDefinitionFamily:
+    Type: String
+    Default: my-task-definition-family
+    Description: The family name for ECS Task Definition.
+
+  ALBName:
+    Type: String
+    Default: my-alb
+    Description: The name of the Application Load Balancer.
+
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+    Description: The ID of an existing VPC.
+
+  Subnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: The first existing subnet in the VPC.
+
+  Subnet2:
+    Type: AWS::EC2::Subnet::Id
+    Description: The second existing subnet in the VPC.
+
+  SecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The existing security group for ECS tasks and ALB.
+
+Resources:
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref ALBName
+      Subnets:
+        - !Ref Subnet1
+        - !Ref Subnet2
+      SecurityGroups:
+        - !Ref SecurityGroupId
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '60'
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 200
+            ContentType: text/plain
+            MessageBody: "OK"
+      LoadBalancerArn: !Ref ALB
+      Port: '80'
+      Protocol: HTTP
+
+  ECSFargateTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref TaskDefinitionFamily
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '256'
+      Memory: '512'
+      ContainerDefinitions:
+        - Name: my-container
+          Image: !Sub '${ECRRepositoryName}:latest'
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Protocol: tcp
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ECSClusterName
+      DesiredCount: 2
+      LaunchType: FARGATE
+      TaskDefinition: !Ref ECSFargateTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref Subnet1
+            - !Ref Subnet2
+          SecurityGroups:
+            - !Ref SecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref ALBListener
+          ContainerName: my-container
+          ContainerPort: 80
+
+Outputs:
+  ECSServiceUrl:
+    Value: !Sub 'http://${ALB.DNSName}'
+    Description: 'URL of the ECS service behind the load balancer.'
