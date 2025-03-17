@@ -44,6 +44,11 @@ Parameters:
     Description: The existing security group for ECS tasks and ALB.
 
 Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ECSClusterName
+
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -91,7 +96,7 @@ Resources:
   ECSService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster: !Ref ECSClusterName
+      Cluster: !Ref ECSCluster  # Reference the ECSCluster resource here
       DesiredCount: 2
       LaunchType: FARGATE
       TaskDefinition: !Ref ECSFargateTaskDefinition
