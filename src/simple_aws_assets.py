@@ -53,8 +53,8 @@ class AwsAssets():
         self.y = y
         self.bucket_name = bucket_name
         self.table_name = table_name
-        self.s3_client = boto3.client("s3")
-        self.dynamodb = boto3.resource("dynamodb")      
+        self.s3_client = boto3.client("s3", region_name='us-east-1')
+        self.dynamodb = boto3.resource("dynamodb", region_name='us-east-1')      
 
     def add(self) -> float:
 
