@@ -93,6 +93,29 @@ Resources:
               HostPort: 80
               Protocol: tcp
 
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECSServiceRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticloadbalancing:RegisterTargets
+                  - elasticloadbalancing:DeregisterTargets
+                  - elasticloadbalancing:DescribeTargetGroups
+                  - elasticloadbalancing:DescribeTargetHealth
+                Resource: "*"
+
   ECSService:
     Type: AWS::ECS::Service
     Properties:
@@ -112,6 +135,7 @@ Resources:
         - TargetGroupArn: !Ref ALBListener
           ContainerName: my-container
           ContainerPort: 80
+      Role: !Ref ECSServiceRole  # Attach the ECS Service Role here
 
 Outputs:
   ECSServiceUrl:
