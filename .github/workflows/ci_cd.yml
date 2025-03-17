@@ -142,22 +142,22 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-        
+
     - name: Deploy CloudFormation stack for ECS update
       run: |
         aws cloudformation deploy \
           --stack-name ${{ env.STACK_NAME }} \
           --template-file cloudformation/aws-new.yml \
           --capabilities CAPABILITY_NAMED_IAM \
-          --parameter-overrides \
-            ECRRepositoryName=${{ secrets.AWS_ECR }} \
-            ECSClusterName=my-ecs-cluster \
-            ECSServiceName=my-ecs-service \
-            TaskDefinitionFamily=my-task-definition-family \
-            ALBName=my-alb \
-            VPCId=vpc-d41ae2a9 \  # Reference the VPCId parameter from secrets
-            Subnet1=subnet-9b047bd6 \  # Reference Subnet1 from secrets
-            Subnet2=subnet-af2c80c9 \  # Reference Subnet2 from secrets
+          --parameter-overrides 
+            ECRRepositoryName=${{ secrets.AWS_ECR }} 
+            ECSClusterName=my-ecs-cluster 
+            ECSServiceName=my-ecs-service 
+            TaskDefinitionFamily=my-task-definition-family 
+            ALBName=my-alb 
+            VPCId=vpc-d41ae2a9   # Reference the VPCId parameter from secrets
+            Subnet1=subnet-9b047bd6   # Reference Subnet1 from secrets
+            Subnet2=subnet-af2c80c9   # Reference Subnet2 from secrets
             SecurityGroupId=sg-1723ce28  # Correct SecurityGroupId reference
 
 # VPCId=${{ secrets.VPC_ID }} \  # Reference the VPCId parameter from secrets
