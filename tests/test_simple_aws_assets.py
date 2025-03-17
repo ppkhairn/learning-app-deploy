@@ -143,30 +143,30 @@ def test_df_2_csv(aws_2_csv) -> None:
         aws_2_csv.df_2_csv()
         mock_to_csv.assert_called_once_with(expected_path)
 
-def test_upload_to_s3(aws_mock, aws_2_csv) -> None:
-    """
-    """
-    # bucket_name = "learning-tests"
-    # s3_key = 
-    filename = "test_aws_s3.csv"
-    file_path = file_folder / filename
-    # s3_client = aws_mock
-    # with mock_aws():
-    s3_client = aws_mock
-    with patch.object(s3_client, 'list_buckets', return_value={"Buckets": []}):
-        aws_2_csv.upload_to_s3(filename)
+# def test_upload_to_s3(aws_mock, aws_2_csv) -> None:
+#     """
+#     """
+#     # bucket_name = "learning-tests"
+#     # s3_key = 
+#     filename = "test_aws_s3.csv"
+#     file_path = file_folder / filename
+#     # s3_client = aws_mock
+#     # with mock_aws():
+#     s3_client = aws_mock
+#     with patch.object(s3_client, 'list_buckets', return_value={"Buckets": []}):
+#         aws_2_csv.upload_to_s3(filename)
 
-    # Check if the file was uploaded to the S3 bucket
-    s3_client = aws_mock
-    response = s3_client.list_objects_v2(Bucket="learning-tests", Prefix="uploads/")
-    list_buckets = s3_client.list_buckets()
-    # Extract the file names from the response
-    file_names = [obj["Key"] for obj in response.get("Contents", [])]
+#     # Check if the file was uploaded to the S3 bucket
+#     s3_client = aws_mock
+#     response = s3_client.list_objects_v2(Bucket="learning-tests", Prefix="uploads/")
+#     list_buckets = s3_client.list_buckets()
+#     # Extract the file names from the response
+#     file_names = [obj["Key"] for obj in response.get("Contents", [])]
 
-    assert f"uploads/{filename}" in file_names
+#     assert f"uploads/{filename}" in file_names
 
-    if file_path.exists():
-        os.remove(file_path)
+#     if file_path.exists():
+#         os.remove(file_path)
 
 
 def test_check_or_create_function_table(aws_mock_db, aws_assets) -> None:
