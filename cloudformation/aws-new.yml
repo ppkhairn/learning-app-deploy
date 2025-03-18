@@ -135,7 +135,7 @@ Resources:
         - TargetGroupArn: !Ref ALBListener
           ContainerName: my-container
           ContainerPort: 80
-      Role: !Ref ECSServiceRole  # Attach the ECS Service Role here
+      # Role: !Ref ECSServiceRole  # Attach the ECS Service Role here
 
 Outputs:
   ECSServiceUrl:
