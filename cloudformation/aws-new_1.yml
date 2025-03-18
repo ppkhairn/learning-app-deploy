@@ -73,6 +73,10 @@ Resources:
       TargetType: ip  # Required for Fargate
       HealthCheckPath: "/"
       HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
 
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -93,7 +97,7 @@ Resources:
         - FARGATE
       Cpu: '256'
       Memory: '512'
-      ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn  # FIXED: Move ExecutionRoleArn here
+      ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn
       ContainerDefinitions:
         - Name: my-container
           Image: !Sub '${ECRRepositoryName}:latest'
@@ -110,7 +114,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: ecs-tasks.amazonaws.com  # FIXED: This should be ecs-tasks, not ecs.amazonaws.com
+              Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
       Policies:
         - PolicyName: ECSServiceExecutionRolePolicy
