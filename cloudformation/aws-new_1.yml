@@ -133,6 +133,10 @@ Resources:
 
   ECSService:
     Type: AWS::ECS::Service
+    DependsOn: 
+      - ALB
+      - ALBListener
+      - ALBTargetGroup
     Properties:
       Cluster: !Ref ECSCluster
       DesiredCount: 2
@@ -147,7 +151,7 @@ Resources:
           SecurityGroups:
             - !Ref SecurityGroupId
       LoadBalancers:
-        - TargetGroupArn: !Ref ALBTargetGroup  # FIXED: Use Target Group instead of Listener
+        - TargetGroupArn: !Ref ALBTargetGroup
           ContainerName: my-container
           ContainerPort: 80
 
