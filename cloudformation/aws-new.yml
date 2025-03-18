@@ -93,6 +93,33 @@ Resources:
               HostPort: 80
               Protocol: tcp
 
+  ECSServiceExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-ECSServiceExecutionRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECSServiceExecutionRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticloadbalancing:RegisterTargets
+                  - elasticloadbalancing:DeregisterTargets
+                  - elasticloadbalancing:DescribeTargetGroups
+                  - elasticloadbalancing:DescribeListeners
+                  - elasticloadbalancing:DescribeRules
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:DescribeTargetHealth
+                Resource: "*"
+
   ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -119,7 +146,7 @@ Resources:
   ECSService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster: !Ref ECSCluster  # Reference the ECSCluster resource here
+      Cluster: !Ref ECSCluster
       DesiredCount: 2
       LaunchType: FARGATE
       TaskDefinition: !Ref ECSFargateTaskDefinition
@@ -135,6 +162,8 @@ Resources:
         - TargetGroupArn: !Ref ALBListener
           ContainerName: my-container
           ContainerPort: 80
+      ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn
+
       # Role: !Ref ECSServiceRole  # Attach the ECS Service Role here
 
 Outputs:
