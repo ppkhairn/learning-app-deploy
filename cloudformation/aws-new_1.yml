@@ -69,11 +69,11 @@ Resources:
       Name: my-target-group
       VpcId: !Ref VPCId
       Protocol: HTTP
-      Port: 80
+      Port: 8080
       TargetType: ip  # Required for Fargate
       HealthCheckPath: "/"
       HealthCheckProtocol: HTTP
-      HealthCheckIntervalSeconds: 30
+      HealthCheckIntervalSeconds: 60
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
@@ -100,9 +100,9 @@ Resources:
       ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn
       ContainerDefinitions:
         - Name: my-container
-          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}:0.1.21'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}:0.1.22'
           PortMappings:
-            - ContainerPort: 80
+            - ContainerPort: 8080
               Protocol: tcp
 
   ECSServiceExecutionRole:
@@ -153,7 +153,7 @@ Resources:
       LoadBalancers:
         - TargetGroupArn: !Ref ALBTargetGroup
           ContainerName: my-container
-          ContainerPort: 80
+          ContainerPort: 8080
 
 Outputs:
   ECSServiceUrl:
