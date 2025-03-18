@@ -147,7 +147,7 @@ jobs:
       run: |
         aws cloudformation deploy \
           --stack-name ${{ env.STACK_NAME }} \
-          --template-file cloudformation/aws-new.yml \
+          --template-file cloudformation/aws-new_1.yml \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides ECRRepositoryName=${{ secrets.AWS_ECR }} \
                                 ECSClusterName=my-ecs-cluster \

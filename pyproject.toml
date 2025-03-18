@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Learning app deployment"
-version = "0.1.17"
+version = "0.1.18"
 description = "poetry for python packages for image upload code"
 authors = ["Pushkar Khairnar <ppkhairn@mtu.edu>"]
 readme = "README.md"
