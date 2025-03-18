@@ -100,7 +100,7 @@ Resources:
       ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn
       ContainerDefinitions:
         - Name: my-container
-          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}:0.1.21'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}:0.1.22'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
