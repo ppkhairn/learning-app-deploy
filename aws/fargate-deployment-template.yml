@@ -6,6 +6,11 @@ Parameters:
     Type: String
     Default: my-ecr-repo
     Description: The name of the ECR repository to store Docker images.
+  
+  ImageTagDeploy:
+    Type: String
+    Default: <Should come from pyproject.toml version>
+    Description: The tag of the docker image in the ECR repository for deployment.
 
   ECSClusterName:
     Type: String
@@ -39,9 +44,13 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: The second existing subnet in the VPC.
 
-  SecurityGroupId:
+  ALBSecurityGroupId:
     Type: AWS::EC2::SecurityGroup::Id
-    Description: The existing security group for ECS tasks and ALB.
+    Description: The existing security group for ALB.
+  
+  ECSSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The existing security group for ECS tasks.
 
 Resources:
   ECSCluster:
@@ -57,21 +66,33 @@ Resources:
         - !Ref Subnet1
         - !Ref Subnet2
       SecurityGroups:
-        - !Ref SecurityGroupId
+        - !Ref ALBSecurityGroupId
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
           Value: '60'
 
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: my-target-group
+      VpcId: !Ref VPCId
+      Protocol: HTTP
+      Port: 8080
+      TargetType: ip  # Required for Fargate
+      HealthCheckPath: "/"
+      HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 60
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: 200
-            ContentType: text/plain
-            MessageBody: "OK"
+        - Type: forward
+          TargetGroupArn: !Ref ALBTargetGroup # FIXED
       LoadBalancerArn: !Ref ALB
       Port: '80'
       Protocol: HTTP
@@ -85,12 +106,12 @@ Resources:
         - FARGATE
       Cpu: '256'
       Memory: '512'
+      ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn
       ContainerDefinitions:
         - Name: my-container
-          Image: !Sub '${ECRRepositoryName}:latest'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepositoryName}:${ImageTagDeploy}'
           PortMappings:
-            - ContainerPort: 80
-              HostPort: 80
+            - ContainerPort: 8080
               Protocol: tcp
 
   ECSServiceExecutionRole:
@@ -102,7 +123,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: ecs.amazonaws.com
+              Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
       Policies:
         - PolicyName: ECSServiceExecutionRolePolicy
@@ -111,40 +132,20 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - elasticloadbalancing:RegisterTargets
-                  - elasticloadbalancing:DeregisterTargets
-                  - elasticloadbalancing:DescribeTargetGroups
-                  - elasticloadbalancing:DescribeListeners
-                  - elasticloadbalancing:DescribeRules
-                  - elasticloadbalancing:DescribeLoadBalancers
-                  - elasticloadbalancing:DescribeTargetHealth
-                Resource: "*"
-
-  ECSServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: ECSServiceRolePolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - elasticloadbalancing:RegisterTargets
-                  - elasticloadbalancing:DeregisterTargets
-                  - elasticloadbalancing:DescribeTargetGroups
-                  - elasticloadbalancing:DescribeTargetHealth
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
                 Resource: "*"
 
   ECSService:
     Type: AWS::ECS::Service
+    DependsOn: 
+      - ALB
+      - ALBListener
+      - ALBTargetGroup
     Properties:
       Cluster: !Ref ECSCluster
       DesiredCount: 2
@@ -157,14 +158,11 @@ Resources:
             - !Ref Subnet1
             - !Ref Subnet2
           SecurityGroups:
-            - !Ref SecurityGroupId
+            - !Ref ECSSecurityGroupId
       LoadBalancers:
-        - TargetGroupArn: !Ref ALBListener
+        - TargetGroupArn: !Ref ALBTargetGroup
           ContainerName: my-container
-          ContainerPort: 80
-      ExecutionRoleArn: !GetAtt ECSServiceExecutionRole.Arn
-
-      # Role: !Ref ECSServiceRole  # Attach the ECS Service Role here
+          ContainerPort: 8080
 
 Outputs:
   ECSServiceUrl:
