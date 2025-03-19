@@ -157,7 +157,8 @@ jobs:
                                 VPCId=vpc-d41ae2a9 \
                                 Subnet1=subnet-9b047bd6 \
                                 Subnet2=subnet-af2c80c9 \
-                                SecurityGroupId=sg-1723ce28
+                                ALBSecurityGroupId=sg-1723ce28 \
+                                ECSSecurityGroupId=sg-0b40d520fe859941b
 
 # VPCId=${{ secrets.VPC_ID }} \  # Reference the VPCId parameter from secrets
 # Subnet1=${{ secrets.SUBNET1_ID }} \  # Reference Subnet1 from secrets
