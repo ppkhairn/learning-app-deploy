@@ -4,7 +4,7 @@ import pandas as pd
 from src.simple_aws_assets import AwsAssets
 
 # Streamlit UI
-st.title("Simple Number Inputs App")
+st.title("Simple Number Inputs App") # Title
 
 # Input fields for two numbers
 num1 = st.number_input("Enter first number:", value=0.0)
