@@ -150,7 +150,7 @@ jobs:
           --template-file aws/fargate-deployment-template.yml \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides ECRRepositoryName=${{ secrets.AWS_ECR }} \
-                                ImageTagDeploy-${{ env.VERSION }}
+                                ImageTagDeploy=${{ env.VERSION }}
                                 ECSClusterName=my-ecs-cluster \
                                 ECSServiceName=my-ecs-service \
                                 TaskDefinitionFamily=my-task-definition-family \
