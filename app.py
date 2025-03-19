@@ -30,4 +30,4 @@ if st.button("Upload DataFrame"):
     if st.session_state["df_state"] is None:
         st.error("Please run the code first")
     elif st.session_state["df_state"] == 'y':
-        st.success("Later Gator!")
+        st.success("Will be added later, Gator!")
