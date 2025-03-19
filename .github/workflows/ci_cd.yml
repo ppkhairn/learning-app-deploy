@@ -147,9 +147,10 @@ jobs:
       run: |
         aws cloudformation deploy \
           --stack-name ${{ env.STACK_NAME }} \
-          --template-file cloudformation/aws-new_1.yml \
+          --template-file aws/fargate-deployment-template.yml \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides ECRRepositoryName=${{ secrets.AWS_ECR }} \
+                                ImageTagDeploy-${{ env.VERSION }}
                                 ECSClusterName=my-ecs-cluster \
                                 ECSServiceName=my-ecs-service \
                                 TaskDefinitionFamily=my-task-definition-family \
