@@ -58,8 +58,20 @@ jobs:
         export PYTHONPATH=$(pwd)/src:$PYTHONPATH
         poetry run pytest tests/ --maxfail=1 --disable-warnings -q # You can adjust pytest options here
 
+    - name: Check for changes in application files
+      id: check_changes
+      run: |
+        if git diff --quiet HEAD~1 -- src/ poetry.lock pyproject.toml app.py; then
+          echo "No relevant changes detected. Skipping Docker build and push."
+          echo "skip_publish=true" >> $GITHUB_ENV
+        else
+          echo "Changes detected. Proceeding with Docker build and push."
+          echo "skip_publish=false" >> $GITHUB_ENV
+        fi
+
     - name: Extract version from pyproject.toml
       id: extract-version
+      if: env.skip_publish == 'false'
       run: |
         VERSION=$(grep -oP '(?<=version = ")[^"]*' pyproject.toml)
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
@@ -73,10 +85,12 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
+      if: env.skip_publish == 'false'
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Get the latest tag from ECR
       id: get-latest-tag
+      if: env.skip_publish == 'false'
       env:
         ECR_REPOSITORY: ${{ secrets.AWS_ECR }}
       run: |
@@ -93,6 +107,7 @@ jobs:
 
     - name: Compare new tag with the latest tag in ECR
       id: compare-tags
+      if: env.skip_publish == 'false'
       env:
         NEW_TAG: ${{ env.VERSION }}  # Extracted from pyproject.toml
         LATEST_TAG: ${{ env.latest_tag }}
@@ -112,6 +127,7 @@ jobs:
     - name: Cleanup Old Images in ECR (Keep Latest 10)
       env:
         ECR_REPOSITORY: ${{ secrets.AWS_ECR }}
+      if: env.skip_publish == 'false'
       run: |
         # Fetch image details sorted by pushed time (descending)
         IMAGE_DETAILS=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query 'imageDetails | sort_by(@, &imagePushedAt) | reverse(@)' --output json)
@@ -137,6 +153,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}   # Registry URL from login
         ECR_REPOSITORY: ${{ secrets.AWS_ECR }} 
         IMAGE_TAG: ${{ env.VERSION }}
+      if: env.skip_publish == 'false'
       run: |
         # Build and push Docker image to ECR
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -144,6 +161,7 @@ jobs:
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Deploy CloudFormation stack for ECS update
+      if: env.skip_publish == 'false'
       run: |
         aws cloudformation deploy \
           --stack-name ${{ env.STACK_NAME }} \
