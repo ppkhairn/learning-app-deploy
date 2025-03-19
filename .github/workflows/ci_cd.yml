@@ -61,9 +61,11 @@ jobs:
     - name: Check for changes in application files
       id: check_changes
       run: |
-        git fetch origin main  # Ensure the latest changes from main are available
-
-        if git diff --quiet origin/main -- src/ poetry.lock pyproject.toml app.py; then
+        git fetch origin main  # Get the latest `main` branch
+        
+        BASE_COMMIT=$(git merge-base origin/main HEAD)  # Find the common ancestor (last commit before merge)
+        
+        if git diff --quiet $BASE_COMMIT -- src/ poetry.lock pyproject.toml app.py; then
           echo "No relevant changes detected. Skipping Docker build and push."
           echo "skip_publish=true" >> $GITHUB_ENV
         else
