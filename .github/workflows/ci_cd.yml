@@ -58,13 +58,16 @@ jobs:
         export PYTHONPATH=$(pwd)/src:$PYTHONPATH
         poetry run pytest tests/ --maxfail=1 --disable-warnings -q # You can adjust pytest options here
 
-    - name: Check for changes in application files
-      id: check_changes
+    - name: Debug Git Changes
       run: |
-        git fetch origin main  # Get the latest `main` branch
+        git fetch origin main
+        BASE_COMMIT=$(git merge-base origin/main HEAD)
         
-        BASE_COMMIT=$(git merge-base origin/main HEAD)  # Find the common ancestor (last commit before merge)
+        echo "Base commit: $BASE_COMMIT"
         
+        echo "Checking differences..."
+        git diff $BASE_COMMIT -- src/ poetry.lock pyproject.toml app.py || true  # Show the diff output
+
         if git diff --quiet $BASE_COMMIT -- src/ poetry.lock pyproject.toml app.py; then
           echo "No relevant changes detected. Skipping Docker build and push."
           echo "skip_publish=true" >> $GITHUB_ENV
@@ -72,7 +75,7 @@ jobs:
           echo "Changes detected. Proceeding with Docker build and push."
           echo "skip_publish=false" >> $GITHUB_ENV
         fi
-
+        
     - name: Extract version from pyproject.toml
       id: extract-version
       if: env.skip_publish == 'false'
