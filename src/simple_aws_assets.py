@@ -11,38 +11,7 @@ from decimal import Decimal ## DynamoDB does not support float. Therefore conver
 scr_path = Path(__file__)
 base_folder = scr_path.parent
 root_folder = base_folder.parent
-file_folder = root_folder / "temp_files"
-
-# create s3 instance
-"""
-*************************************************************
-*************************************************************
-Very important:
-
-The s3_client defined below is at a global level. 
-if we don't define s3_client in the upload_to_s3() function below again,
-this might create a lot of issues while testing.
-1) While testing, we want to mock the aws services and not use actual services.
-2) Even though we create a mock_aws pytest.fixture and pass it through the test_upload_to_s3() function,
-   the services might be initiated as mocked as given in the fixture but as soon as it enters the upload_to_s3() function,
-   the function will start using real aws srevices.
-3) The reason being: By ensuring that boto3.client("s3") is inside the method, the moto library can properly mock the client 
-   when the upload_to_s3() method is called during testing. Without this, if the s3_client was defined outside 
-   (or at the global level), the mocked s3_client wouldn't be used by the method, and the actual S3 service might be called instead.
-4) So it is better to define the s3_client in the class or in the function.
-
-#########################################
-5) I am commenting out the s_client on line #45 here for the above reasons.
-
-6) We can either add the s3_client definition to the individual function runnning tests like upload_to_s3() [since tests/test_upload_tos3()
-   uses the function upload_to_s3()] or we can define the s3_client in the class __init__ like I have done below.
-
-7) If you wanna define s3_client in the functions, see commented line #104.
-8) If you want to define s3_client in the class, see line #56 below. (This is what this code is using.)
-*************************************************************
-*************************************************************
-"""
-# s3_client = boto3.client("s3")   
+file_folder = root_folder / "temp_files"  
 
 class AwsAssets():
 
@@ -162,6 +131,9 @@ class AwsAssets():
         return None
     
     def update_numbers(self, x: float, y: float) -> None:
+        """
+        Update Numbers for the class instance
+        """
 
         self.x = x
         self.y = y
