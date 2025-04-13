@@ -154,7 +154,7 @@ jobs:
       run: |
         aws cloudformation deploy \
           --stack-name ${{ env.STACK_NAME }} \
-          --template-file aws/fargate-deployment-template.yml \
+          --template-file aws/fargate-deployment-template-new.yml \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides ECRRepositoryName=${{ secrets.AWS_ECR }} \
                                 ImageTagDeploy=${{ env.VERSION }}
@@ -163,10 +163,27 @@ jobs:
                                 TaskDefinitionFamily=my-task-definition-family \
                                 ALBName=my-alb \
                                 VPCId=vpc-d41ae2a9 \
-                                Subnet1=subnet-9b047bd6 \
-                                Subnet2=subnet-af2c80c9 \
                                 ALBSecurityGroupId=sg-1723ce28 \
                                 ECSSecurityGroupId=sg-0b40d520fe859941b
+
+    # - name: Deploy CloudFormation stack for ECS update
+    #   # if: env.skip_publish == 'false'
+    #   run: |
+    #     aws cloudformation deploy \
+    #       --stack-name ${{ env.STACK_NAME }} \
+    #       --template-file aws/fargate-deployment-template.yml \
+    #       --capabilities CAPABILITY_NAMED_IAM \
+    #       --parameter-overrides ECRRepositoryName=${{ secrets.AWS_ECR }} \
+    #                             ImageTagDeploy=${{ env.VERSION }}
+    #                             ECSClusterName=my-ecs-cluster \
+    #                             ECSServiceName=my-ecs-service \
+    #                             TaskDefinitionFamily=my-task-definition-family \
+    #                             ALBName=my-alb \
+    #                             VPCId=vpc-d41ae2a9 \
+    #                             Subnet1=subnet-9b047bd6 \
+    #                             Subnet2=subnet-af2c80c9 \
+    #                             ALBSecurityGroupId=sg-1723ce28 \
+    #                             ECSSecurityGroupId=sg-0b40d520fe859941b
 
 # VPCId=${{ secrets.VPC_ID }} \  # Reference the VPCId parameter from secrets
 # Subnet1=${{ secrets.SUBNET1_ID }} \  # Reference Subnet1 from secrets
