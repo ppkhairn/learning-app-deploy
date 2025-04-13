@@ -38,22 +38,22 @@ Parameters:
 
   PublicSubnet1CIDR:
     Type: String
-    Default: 10.0.1.0/24
+    Default: 172.31.1.0/24
     Description: CIDR block for public subnet 1.
 
   PublicSubnet2CIDR:
     Type: String
-    Default: 10.0.2.0/24
+    Default: 172.31.2.0/24
     Description: CIDR block for public subnet 2.
 
   PrivateSubnet1CIDR:
     Type: String
-    Default: 10.0.3.0/24
+    Default: 172.31.3.0/24
     Description: CIDR block for private subnet 1.
 
   PrivateSubnet2CIDR:
     Type: String
-    Default: 10.0.4.0/24
+    Default: 172.31.4.0/24
     Description: CIDR block for private subnet 2.
 
   ALBSecurityGroupId:
