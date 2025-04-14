@@ -64,9 +64,9 @@ Parameters:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The existing security group for ECS tasks.
 
-  InternetGatewayId:
-    Type: AWS::EC2::InternetGateway::Id
-    Description: The ID of an existing internet gateway.
+  # InternetGatewayId:
+  #   Type: AWS::EC2::InternetGateway::Id
+  #   Description: The ID of an existing internet gateway.
 
 Resources:
 
@@ -119,7 +119,8 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: igw-0cc13fcf28cb04f51 #!Ref InternetGatewayId
+      GatewayId: igw-0cc13fcf28cb04f51 
+      # GatewayId: !Ref InternetGatewayId
 
   PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
