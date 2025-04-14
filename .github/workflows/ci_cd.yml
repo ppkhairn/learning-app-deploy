@@ -164,7 +164,8 @@ jobs:
                                 ALBName=my-alb \
                                 VPCId=vpc-d41ae2a9 \
                                 ALBSecurityGroupId=sg-1723ce28 \
-                                ECSSecurityGroupId=sg-0b40d520fe859941b
+                                ECSSecurityGroupId=sg-0b40d520fe859941b \
+                                InternetGatewayId=igw-0cc13fcf28cb04f51
 
     # - name: Deploy CloudFormation stack for ECS update
     #   # if: env.skip_publish == 'false'
