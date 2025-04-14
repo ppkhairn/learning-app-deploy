@@ -84,7 +84,7 @@ Resources:
       VpcId: !Ref VPCId
       CidrBlock: !Ref PublicSubnet2CIDR
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [0, !GetAZs ''] # Select the first AZ
+      AvailabilityZone: !Select [1, !GetAZs ''] # Select the first AZ
 
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
@@ -98,7 +98,7 @@ Resources:
     Properties:
       VpcId: !Ref VPCId
       CidrBlock: !Ref PrivateSubnet2CIDR
-      AvailabilityZone: !Select [0, !GetAZs ''] # Select the first AZ
+      AvailabilityZone: !Select [1, !GetAZs ''] # Select the first AZ
 
   # InternetGateway:
   #   Type: AWS::EC2::InternetGateway
