@@ -68,6 +68,16 @@ Parameters:
   #   Type: AWS::EC2::InternetGateway::Id
   #   Description: The ID of an existing internet gateway.
 
+  # DomainName:
+  #   Type: String
+  #   Default: example.com
+  #   Description: The domain name for Route 53.
+
+  # SubDomainName:
+  #   Type: String
+  #   Default: service
+  #   Description: The subdomain name.
+
 Resources:
 
   PublicSubnet1:
@@ -212,6 +222,22 @@ Resources:
       LoadBalancerArn: !Ref ALB
       Port: '80'
       Protocol: HTTP
+
+  # # Route 53 Resources (Commented Out)
+  # HostedZone:
+  #   Type: AWS::Route53::HostedZone
+  #   Properties:
+  #     Name: !Ref DomainName
+
+  # RecordSet:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneId: !GetAtt HostedZone.Id
+  #     Name: !Sub "${SubDomainName}.${DomainName}."
+  #     Type: A
+  #     AliasTarget:
+  #       HostedZoneId: !GetAtt ALB.CanonicalHostedZoneId
+  #       DNSName: !GetAtt ALB.DNSName
 
   ECSFargateTaskDefinition:
     Type: AWS::ECS::TaskDefinition
